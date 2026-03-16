@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare Staff Portal</title>
+    <style>
+        /* ==================== CSS VARIABLES & THEMING ==================== */
+        :root {
+            --primary-color: #0d6efd;
+            --primary-dark: #0a58ca;
+            --primary-light: #e7f1ff;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+            
+            --text-dark: #1a1a1a;
+            --text-light: #6c757d;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --border-color: #dee2e6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+            
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            
+            --border-radius: 8px;
+            --border-radius-lg: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== GLOBAL STYLES ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        /* ==================== LAYOUT STRUCTURE ==================== */
+        #app {
+            display: flex;
+            height: 100vh;
+            flex-direction: row;
+        }
+
+        /* ==================== SIDEBAR NAVIGATION ==================== */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            overflow-y: auto;
+            transition: var(--transition);
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .sidebar-logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: var(--spacing-md) 0;
+            flex: 1;
+        }
+
+        .sidebar-menu-item {
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            color: var(--text-dark);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-link:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding-left: calc(var(--spacing-lg) + 4px);
+        }
+
+        .sidebar-menu-link.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .sidebar-menu-icon {
+            font-size: 18px;
+            margin-right: var(--spacing-md);
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+        }
+
+        .sidebar-footer-item {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .sidebar-footer-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* ==================== MAIN CONTENT AREA ==================== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ==================== TOP NAVIGATION BAR ==================== */
+        .top-nav {
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .nav-brand-icon {
+            font-size: 24px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+        }
+
+        .nav-user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.08);
+            box-shadow: var(--shadow-md);
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-logout:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ==================== CONTENT WRAPPER ==================== */
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-xl);
+            background-color: var(--bg-secondary);
+        }
+
+        .page-header {
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* ==================== SECTION STYLES ==================== */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== DASHBOARD SECTION ==================== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .stat-card {
+            background-color: var(--bg-primary);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--info-color);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: var(--spacing-sm);
+            color: var(--success-color);
+        }
+
+        /* ==================== PATIENT SEARCH ==================== */
+        .search-container {
+            background-color: var(--bg-primary);
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .search-header {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .search-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            padding-left: 40px;
+            font-size: 14px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            background-color: var(--bg-primary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .search-input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 16px;
+        }
+
+        .search-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .patient-list {
+            list-style: none;
+        }
+
+        .patient-item {
+            background-color: var(--bg-secondary);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-item:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .patient-info {
+            flex: 1;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .patient-meta {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .patient-action {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .patient-action:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        /* ==================== CHAT SECTION ==================== */
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 180px);
+            gap: var(--spacing-lg);
+            background-color: transparent;
+        }
+
+        .chat-sidebar {
+            width: 280px;
+            background-color: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-sidebar-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+        }
+
+        .chat-sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .chat-list {
+            list-style: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-list-item {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+
+        .chat-list-item:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .chat-list-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .chat-list-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .chat-list-item.active .chat-list-name {
+            color: var(--primary-color);
+        }
+
+        .chat-list-time {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .chat-main {
+            flex: 1;
+            background-color: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-user {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .chat-header-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: var(--spacing-md);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.own {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 65%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.own .message-content {
+            align-items: flex-end;
+        }
+
+        .message-bubble {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.own .message-bubble {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .message:not(.own) .message-bubble {
+            background-color: var(--bg-tertiary);
+            color: var(--text-dark);
+        }
+
+        .message-meta {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: var(--spacing-xs);
+        }
+
+        .message.own .message-meta {
+            color: var(--text-light);
+        }
+
+        .message-sender {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .message:not(.own) .message-sender {
+            color: var(--primary-color);
+        }
+
+        .chat-input-area {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 100px;
+            transition: var(--transition);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .chat-send-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            align-self: flex-end;
+        }
+
+        .chat-send-btn:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ==================== SETTINGS SECTION ==================== */
+        .settings-container {
+            max-width: 600px;
+            background-color: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .settings-section {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-section:last-child {
+            border-bottom: none;
+        }
+
+        .settings-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .settings-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .settings-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background-color: var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle-switch.active {
+            background-color: var(--success-color);
+        }
+
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: var(--transition);
+        }
+
+        .toggle-switch.active::before {
+            left: 26px;
+        }
+
+        .btn-save {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-save:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ==================== PATIENT MODAL ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-primary);
+            padding: var(--spacing-2xl);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        .patient-detail-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .patient-detail-label {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .patient-detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .patient-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        /* ==================== RESPONSIVE DESIGN ==================== */
+        @media (max-width: 1024px) {
+            .chat-container {
+                flex-direction: column;
+            }
+
+            .chat-sidebar {
+                width: 100%;
+                max-height: 250px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            #app {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                order: 2;
+                height: auto;
+                border-right: none;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .main-content {
+                order: 1;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                flex-direction: row;
+                padding: var(--spacing-sm) 0;
+                overflow-x: auto;
+            }
+
+            .sidebar-menu-link {
+                padding: var(--spacing-sm) var(--spacing-md);
+                white-space: nowrap;
+            }
+
+            .search-input {
+                max-width: 100%;
+            }
+
+            .patient-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .patient-action {
+                align-self: flex-start;
+                margin-top: var(--spacing-sm);
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: var(--spacing-lg);
+            }
+
+            .content-wrapper {
+                padding: var(--spacing-lg);
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .top-nav {
+                padding: var(--spacing-md);
+            }
+
+            .nav-right {
+                gap: var(--spacing-md);
+            }
+
+            .user-details {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-messages {
+                padding: var(--spacing-md);
+            }
+
+            .message-content {
+                max-width: 95%;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .page-title {
+                font-size: 18px;
+            }
+
+            .sidebar-menu-link {
+                padding: var(--spacing-sm);
+                font-size: 12px;
+            }
+
+            .sidebar-menu-icon {
+                margin-right: var(--spacing-xs);
+            }
+        }
+
+        /* ==================== SCROLLBAR STYLING ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* ==================== UTILITY CLASSES ==================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            color: var(--text-light);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🏥 HealthCare</div>
+                <div class="sidebar-subtitle">Staff Portal</div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link active" data-page="dashboard">
+                        <span class="sidebar-menu-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" data-page="patients">
+                        <span class="sidebar-menu-icon">👥</span>
+                        <span>Patients</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" data-page="chat">
+                        <span class="sidebar-menu-icon">💬</span>
+                        <span>Chat</span>
+                        <span class="notification-badge" id="chatBadge" style="display: none;">3</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" data-page="settings">
+                        <span class="sidebar-menu-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-item">
+                    <span class="sidebar-footer-label">Status:</span>
+                    Online ✓
+                </div>
+                <div class="sidebar-footer-item" style="margin-top: var(--spacing-md);">
+                    <span class="sidebar-footer-label">Version:</span>
+                    1.0.0
+                </div>
+            </div>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT AREA ==================== -->
+        <div class="main-content">
+            <!-- TOP NAVIGATION BAR -->
+            <nav class="top-nav">
+                <div class="nav-brand">
+                    <span class="nav-brand-icon">🔔</span>
+                    <span id="navBrandText">Welcome to HealthCare Portal</span>
+                </div>
+                <div class="nav-right">
+                    <div class="nav-user-info">
+                        <div class="user-avatar" id="userAvatar">JD</div>
+                        <div class="user-details">
+                            <div class="user-name" id="userName">Dr. Jane Doe</div>
+                            <div class="user-role">Physician</div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                </div>
+            </nav>
+
+            <!-- CONTENT WRAPPER -->
+            <div class="content-wrapper">
+                <!-- ==================== DASHBOARD SECTION ==================== -->
+                <section id="dashboardSection" class="section active">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Welcome back! Here's an overview of your activity.</p>
+                    </div>
+
+                    <div class="dashboard-grid" id="dashboardStats">
+                        <!-- Stats will be dynamically loaded here -->
+                    </div>
+                </section>
+
+                <!-- ==================== PATIENTS SECTION ==================== -->
+                <section id="patientsSection" class="section">
+                    <div class="page-header">
+                        <h1 class="page-title">Patients</h1>
+                        <p class="page-subtitle">Search and manage your patient records.</p>
+                    </div>
+
+                    <div class="search-container">
+                        <div class="search-header">
+                            <h3>Search Patients</h3>
+                        </div>
+                        <div class="search-input-wrapper">
+                            <span class="search-input-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                id="patientSearchInput" 
+                                class="search-input" 
+                                placeholder="Search by name, ID, or email..."
+                            >
+                        </div>
+                        <div class="search-results">
+                            <ul class="patient-list" id="patientList">
+                                <li class="no-results">Start typing to search for patients...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== CHAT SECTION ==================== -->
+                <section id="chatSection" class="section">
+                    <div class="page-header">
+                        <h1 class="page-title">Staff Chat</h1>
+                        <p class="page-subtitle">Communicate with your team in real-time.</p>
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-sidebar">
+                            <div class="chat-sidebar-header">
+                                <div class="chat-sidebar-title">Conversations</div>
+                            </div>
+                            <ul class="chat-list" id="chatList">
+                                <!-- Chat conversations will be dynamically loaded here -->
+                            </ul>
+                        </div>
+
+                        <div class="chat-main">
+                            <div class="chat-header">
+                                <div class="chat-header-user">
+                                    <div class="user-avatar" style="width: 32px; height: 32px; font-size: 14px;">JD</div>
+                                    <div>
+                                        <div class="chat-header-name" id="chatHeaderName">Select a conversation</div>
+                                        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-light);">
+                                            <div class="online-indicator"></div>
+                                            Online
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="chat-messages" id="chatMessages">
+                                <div style="text-align: center; color: var(--text-light); padding: 2rem;">
+                                    Select a conversation to start chatting
+                                </div>
+                            </div>
+
+                            <div class="chat-input-area">
+                                <input 
+                                    type="text" 
+                                    id="chatInput" 
+                                    class="chat-input" 
+                                    placeholder="Type your message..." 
+                                    disabled
+                                >
+                                <button id="chatSendBtn" class="chat-send-btn" disabled>Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== SETTINGS SECTION ==================== -->
+                <section id="settingsSection" class="section">
+                    <div class="page-header">
+                        <h1 class="page-title">Settings</h1>
+                        <p class="page-subtitle">Manage your account and preferences.</p>
+                    </div>
+
+                    <div class="settings-container">
+                        <div class="settings-section">
+                            <h3 class="settings-title">Profile Settings</h3>
+                            <div class="settings-group">
+                                <label class="settings-label">Full Name</label>
+                                <input 
+                                    type="text" 
+                                    class="settings-input" 
+                                    id="settingsName" 
+                                    placeholder="Your full name"
+                                >
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Email Address</label>
+                                <input 
+                                    type="email" 
+                                    class="settings-input" 
+                                    id="settingsEmail" 
+                                    placeholder="your.email@hospital.com"
+                                >
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Department</label>
+                                <input 
+                                    type="text" 
+                                    class="settings-input" 
+                                    id="settingsDepartment" 
+                                    placeholder="Your department"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3 class="settings-title">Notification Preferences</h3>
+                            <div class="settings-toggle">
+                                <div class="toggle-switch active" id="emailNotification"></div>
+                                <label class="settings-label" style="margin: 0;">Email Notifications</label>
+                            </div>
+                            <div class="settings-toggle">
+                                <div class="toggle-switch active" id="chatNotification"></div>
+                                <label class="settings-label" style="margin: 0;">Chat Notifications</label>
+                            </div>
+                            <div class="settings-toggle">
+                                <div class="toggle-switch" id="desktopNotification"></div>
+                                <label class="settings-label" style="margin: 0;">Desktop Notifications</label>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <button class="btn-save" id="saveSettingsBtn">Save Changes</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PATIENT DETAIL MODAL ==================== -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalPatientName">Patient Details</h2>
+                <button class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+
+            <div class="patient-detail-grid" id="patientDetailContent">
+                <!-- Patient details will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== APPLICATION STATE & CONFIGURATION ====================
+        // This section contains all application state, data structures, and configuration
+        // Ready for Flask + MySQL backend integration
+
+        const appState = {
+            currentUser: {
+                id: 'user_001',
+                name: 'Dr. Jane Doe',
+                role: 'Physician',
+                email: 'jane.doe@hospital.com',
+                department: 'Cardiology',
+                avatar: 'JD'
+            },
+            currentPage: 'dashboard',
+            currentChatUser: null,
+            unreadMessages: 3,
+            notifications: []
+        };
+
+        // ==================== DATABASE/API PLACEHOLDERS ====================
+        // These functions are placeholders for Flask backend API calls
+        // They currently return mock data but should be replaced with actual API calls
+
+        /**
+         * Fetch dashboard statistics from the backend
+         * TODO: Replace with actual Flask API call: GET /api/dashboard/stats
+         */
+        async function fetchDashboardStats() {
+            // PLACEHOLDER: In production, replace with:
+            // return fetch('/api/dashboard/stats')
+            //     .then(response => response.json())
+            //     .catch(error => console.error('API Error:', error));
+
+            return [
+                {
+                    label: 'Total Patients',
+                    value: '1,247',
+                    change: '+12% this month',
+                    type: 'primary'
+                },
+                {
+                    label: 'Appointments Today',
+                    value: '15',
+                    change: '+3 from yesterday',
+                    type: 'success'
+                },
+                {
+                    label: 'Pending Reviews',
+                    value: '8',
+                    change: '-2 completed',
+                    type: 'warning'
+                },
+                {
+                    label: 'Patient Satisfaction',
+                    value: '4.8/5',
+                    change: 'Excellent performance',
+                    type: 'info'
+                }
+            ];
+        }
+
+        /**
+         * Fetch all patients from the backend
+         * TODO: Replace with actual Flask API call: GET /api/patients
+         * @param {string} searchQuery - Optional search filter
+         */
+        async function fetchPatients(searchQuery = '') {
+            // PLACEHOLDER: In production, replace with:
+            // return fetch(`/api/patients?search=${searchQuery}`)
+            //     .then(response => response.json())
+            //     .catch(error => console.error('API Error:', error));
+
+            const allPatients = [
+                {
+                    id: 'P001',
+                    name: 'John Smith',
+                    email: 'john.smith@email.com',
+                    phone: '(555) 123-4567',
+                    age: 45,
+                    gender: 'Male',
+                    dateOfBirth: '1978-05-15',
+                    bloodType: 'O+',
+                    allergies: 'Penicillin',
+                    lastVisit: '2024-02-20',
+                    nextAppointment: '2024-03-15',
+                    medicalHistory: 'Hypertension, Type 2 Diabetes',
+                    currentMedications: 'Lisinopril, Metformin'
+                },
+                {
+                    id: 'P002',
+                    name: 'Sarah Johnson',
+                    email: 'sarah.j@email.com',
+                    phone: '(555) 234-5678',
+                    age: 32,
+                    gender: 'Female',
+                    dateOfBirth: '1991-12-08',
+                    bloodType: 'A-',
+                    allergies: 'None',
+                    lastVisit: '2024-02-18',
+                    nextAppointment: '2024-03-20',
+                    medicalHistory: 'Asthma',
+                    currentMedications: 'Albuterol inhaler'
+                },
+                {
+                    id: 'P003',
+                    name: 'Michael Chen',
+                    email: 'mchen@email.com',
+                    phone: '(555) 345-6789',
+                    age: 58,
+                    gender: 'Male',
+                    dateOfBirth: '1965-03-22',
+                    bloodType: 'B+',
+                    allergies: 'Sulfonamides',
+                    lastVisit: '2024-02-15',
+                    nextAppointment: '2024-03-10',
+                    medicalHistory: 'Coronary Artery Disease, High Cholesterol',
+                    currentMedications: 'Atorvastatin, Aspirin, Metoprolol'
+                },
+                {
+                    id: 'P004',
+                    name: 'Emily Rodriguez',
+                    email: 'emily.r@email.com',
+                    phone: '(555) 456-7890',
+                    age: 28,
+                    gender: 'Female',
+                    dateOfBirth: '1995-07-14',
+                    bloodType: 'AB+',
+                    allergies: 'Latex',
+                    lastVisit: '2024-02-22',
+                    nextAppointment: '2024-03-25',
+                    medicalHistory: 'Thyroid condition (Hypothyroidism)',
+                    currentMedications: 'Levothyroxine'
+                },
+                {
+                    id: 'P005',
+                    name: 'David Williams',
+                    email: 'dwilliams@email.com',
+                    phone: '(555) 567-8901',
+                    age: 51,
+                    gender: 'Male',
+                    dateOfBirth: '1972-11-03',
+                    bloodType: 'O-',
+                    allergies: 'NSAIDs',
+                    lastVisit: '2024-02-10',
+                    nextAppointment: '2024-03-12',
+                    medicalHistory: 'Arthritis, Back Pain',
+                    currentMedications: 'Ibuprofen, Physical Therapy'
+                }
+            ];
+
+            // Filter based on search query
+            if (!searchQuery.trim()) {
+                return allPatients;
+            }
+
+            const query = searchQuery.toLowerCase();
+            return allPatients.filter(patient =>
+                patient.name.toLowerCase().includes(query) ||
+                patient.id.toLowerCase().includes(query) ||
+                patient.email.toLowerCase().includes(query)
+            );
+        }
+
+        /**
+         * Fetch staff members and chat conversations
+         * TODO: Replace with actual Flask API call: GET /api/staff
+         */
+        async function fetchStaffMembers() {
+            // PLACEHOLDER: In production, replace with:
+            // return fetch('/api/staff')
+            //     .then(response => response.json())
+            //     .catch(error => console.error('API Error:', error));
+
+            return [
+                { id: 'staff_001', name: 'Dr. James Wilson', role: 'Surgeon', status: 'online', avatar: 'JW' },
+                { id: 'staff_002', name: 'Nurse Maria Garcia', role: 'Nurse', status: 'online', avatar: 'MG' },
+                { id: 'staff_003', name: 'Dr. Robert Thompson', role: 'Radiologist', status: 'offline', avatar: 'RT' },
+                { id: 'staff_004', name: 'Pharmacist Lisa Brown', role: 'Pharmacist', status: 'online', avatar: 'LB' }
+            ];
+        }
+
+        /**
+         * Fetch chat messages for a specific staff member
+         * TODO: Replace with actual Flask API call: GET /api/chat/messages/:staffId
+         * @param {string} staffId - The ID of the staff member
+         */
+        async function fetchChatMessages(staffId) {
+            // PLACEHOLDER: In production, replace with:
+            // return fetch(`/api/chat/messages/${staffId}`)
+            //     .then(response => response.json())
+            //     .catch(error => console.error('API Error:', error));
+
+            const mockMessages = {
+                staff_001: [
+                    { id: 'msg_001', sender: appState.currentUser.name, senderId: 'user_001', text: 'Hi James, how are you?', timestamp: new Date(Date.now() - 300000) },
+                    { id: 'msg_002', sender: 'Dr. James Wilson', senderId: 'staff_001', text: 'Hi Jane! Doing great, just finished a surgery.', timestamp: new Date(Date.now() - 240000) },
+                    { id: 'msg_003', sender: appState.currentUser.name, senderId: 'user_001', text: 'That sounds exciting! How did it go?', timestamp: new Date(Date.now() - 180000) },
+                    { id: 'msg_004', sender: 'Dr. James Wilson', senderId: 'staff_001', text: 'Everything went smoothly. Patient is recovering well.', timestamp: new Date(Date.now() - 120000) }
+                ],
+                staff_002: [
+                    { id: 'msg_005', sender: appState.currentUser.name, senderId: 'user_001', text: 'Maria, can you check on patient P001?', timestamp: new Date(Date.now() - 600000) },
+                    { id: 'msg_006', sender: 'Nurse Maria Garcia', senderId: 'staff_002', text: 'Already done! Vitals are stable.', timestamp: new Date(Date.now() - 540000) }
+                ],
+                staff_004: [
+                    { id: 'msg_007', sender: appState.currentUser.name, senderId: 'user_001', text: 'Lisa, is the new medication in stock?', timestamp: new Date(Date.now() - 900000) },
+                    { id: 'msg_008', sender: 'Pharmacist Lisa Brown', senderId: 'staff_004', text: 'Yes, arrived this morning!', timestamp: new Date(Date.now() - 840000) }
+                ]
+            };
+
+            return mockMessages[staffId] || [];
+        }
+
+        /**
+         * Save message to backend
+         * TODO: Replace with actual Flask API call: POST /api/chat/messages
+         * @param {string} recipientId - The ID of the recipient
+         * @param {string} message - The message text
+         */
+        async function sendChatMessage(recipientId, message) {
+            // PLACEHOLDER: In production, replace with:
+            // return fetch('/api/chat/messages', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({
+            //         recipientId: recipientId,
+            //         message: message,
+            //         timestamp: new Date()
+            //     })
+            // }).then(response => response.json())
+            //  .catch(error => console.error('API Error:', error));
+
+            console.log(`Message sent to ${recipientId}: ${message}`);
+            return {
+                id: `msg_${Date.now()}`,
+                sender: appState.currentUser.name,
+                senderId: appState.currentUser.id,
+                text: message,
+                timestamp: new Date()
+            };
+        }
+
+        // ==================== UI INITIALIZATION ====================
+
+        /**
+         * Initialize the application
+         */
+        async function initializeApp() {
+            loadDashboard();
+            setupEventListeners();
+            updateUserDisplay();
+            showNotification('Welcome back, Dr. Doe!');
+        }
+
+        /**
+         * Setup all event listeners
+         */
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('[data-page]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    navigateToPage(page);
+                });
+            });
+
+            // Patient search
+            const patientSearchInput = document.getElementById('patientSearchInput');
+            if (patientSearchInput) {
+                patientSearchInput.addEventListener('input', (e) => {
+                    searchPatients(e.target.value);
+                });
+            }
+
+            // Chat functionality
+            const chatInput = document.getElementById('chatInput');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+
+            if (chatSendBtn) {
+                chatSendBtn.addEventListener('click', sendMessage);
+            }
+            if (chatInput) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+
+            // Modal
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const modal = document.getElementById('patientModal');
+            if (modalCloseBtn) {
+                modalCloseBtn.addEventListener('click', closeModal);
+            }
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+
+            // Settings
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.currentTarget.classList.toggle('active');
+                });
+            });
+
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', saveSettings);
+            }
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+        }
+
+        /**
+         * Navigate to a different page/section
+         * @param {string} page - The page to navigate to
+         */
+        function navigateToPage(page) {
+            // Update active navigation
+            document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            const sectionId = `${page}Section`;
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+
+            // Update page state
+            appState.currentPage = page;
+
+            // Load page-specific data
+            switch (page) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'patients':
+                    // Patient search is interactive
+                    break;
+                case 'chat':
+                    loadChatInterface();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+            }
+
+            // Update brand text
+            const titles = {
+                dashboard: 'Dashboard - Overview',
+                patients: 'Patient Management',
+                chat: 'Team Communication',
+                settings: 'Account Settings'
+            };
+            document.getElementById('navBrandText').textContent = titles[page] || 'HealthCare Portal';
+        }
+
+        /**
+         * Load and display dashboard statistics
+         */
+        async function loadDashboard() {
+            const statsContainer = document.getElementById('dashboardStats');
+            statsContainer.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const stats = await fetchDashboardStats();
+                statsContainer.innerHTML = stats.map(stat => `
+                    <div class="stat-card ${stat.type}">
+                        <div class="stat-label">${stat.label}</div>
+                        <div class="stat-value">${stat.value}</div>
+                        <div class="stat-change">${stat.change}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                statsContainer.innerHTML = '<div class="no-results">Error loading dashboard data</div>';
+            }
+        }
+
+        /**
+         * Search patients dynamically
+         * @param {string} searchQuery - The search query
+         */
+        async function searchPatients(searchQuery) {
+            const patientList = document.getElementById('patientList');
+
+            if (!searchQuery.trim()) {
+                patientList.innerHTML = '<li class="no-results">Start typing to search for patients...</li>';
+                return;
+            }
+
+            patientList.innerHTML = '<li><div class="loading"></div></li>';
+
+            try {
+                const patients = await fetchPatients(searchQuery);
+
+                if (patients.length === 0) {
+                    patientList.innerHTML = '<li class="no-results">No patients found</li>';
+                    return;
+                }
+
+                patientList.innerHTML = patients.map(patient => `
+                    <li class="patient-item">
+                        <div class="patient-info">
+                            <div class="patient-name">${patient.name}</div>
+                            <div class="patient-meta">ID: ${patient.id} | Age: ${patient.age} | ${patient.email}</div>
+                        </div>
+                        <button class="patient-action" onclick="viewPatientDetails('${patient.id}')">View</button>
+                    </li>
+                `).join('');
+            } catch (error) {
+                console.error('Error searching patients:', error);
+                patientList.innerHTML = '<li class="no-results">Error searching patients</li>';
+            }
+        }
+
+        /**
+         * View detailed patient information
+         * @param {string} patientId - The patient ID
+         */
+        async function viewPatientDetails(patientId) {
+            const patients = await fetchPatients();
+            const patient = patients.find(p => p.id === patientId);
+
+            if (!patient) return;
+
+            // Populate modal
+            document.getElementById('modalPatientName').textContent = patient.name;
+            document.getElementById('patientDetailContent').innerHTML = `
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Patient ID</div>
+                    <div class="patient-detail-value">${patient.id}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Email</div>
+                    <div class="patient-detail-value">${patient.email}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Phone</div>
+                    <div class="patient-detail-value">${patient.phone}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Age / DOB</div>
+                    <div class="patient-detail-value">${patient.age} years (${patient.dateOfBirth})</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Blood Type</div>
+                    <div class="patient-detail-value">${patient.bloodType}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Allergies</div>
+                    <div class="patient-detail-value">${patient.allergies}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Last Visit</div>
+                    <div class="patient-detail-value">${patient.lastVisit}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Next Appointment</div>
+                    <div class="patient-detail-value">${patient.nextAppointment}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Medical History</div>
+                    <div class="patient-detail-value">${patient.medicalHistory}</div>
+                </div>
+                <div class="patient-detail-section">
+                    <div class="patient-detail-label">Current Medications</div>
+                    <div class="patient-detail-value">${patient.currentMedications}</div>
+                </div>
+            `;
+
+            // Open modal
+            document.getElementById('patientModal').classList.add('active');
+        }
+
+        /**
+         * Close patient detail modal
+         */
+        function closeModal() {
+            document.getElementById('patientModal').classList.remove('active');
+        }
+
+        /**
+         * Load chat interface
+         */
+        async function loadChatInterface() {
+            const chatList = document.getElementById('chatList');
+            chatList.innerHTML = '<li><div class="loading"></div></li>';
+
+            try {
+                const staffMembers = await fetchStaffMembers();
+
+                chatList.innerHTML = staffMembers.map(staff => `
+                    <li class="chat-list-item" onclick="selectChatUser('${staff.id}', '${staff.name}')">
+                        <div class="chat-list-name">${staff.name}</div>
+                        <div class="chat-list-time">${staff.role}</div>
+                    </li>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading chat interface:', error);
+            }
+        }
+
+        /**
+         * Select a chat user and load their messages
+         * @param {string} staffId - The staff member ID
+         * @param {string} staffName - The staff member name
+         */
+        async function selectChatUser(staffId, staffName) {
+            appState.currentChatUser = staffId;
+
+            // Update header
+            document.getElementById('chatHeaderName').textContent = staffName;
+
+            // Update active user
+            document.querySelectorAll('.chat-list-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Enable input
+            document.getElementById('chatInput').disabled = false;
+            document.getElementById('chatSendBtn').disabled = false;
+
+            // Load messages
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const messages = await fetchChatMessages(staffId);
+
+                if (messages.length === 0) {
+                    chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-light); padding: 2rem;">No messages yet. Start a conversation!</div>';
+                } else {
+                    chatMessages.innerHTML = messages.map(msg => {
+                        const isOwn = msg.senderId === appState.currentUser.id;
+                        return `
+                            <div class="message ${isOwn ? 'own' : ''}">
+                                <div class="message-content">
+                                    ${!isOwn ? `<div class="message-sender">${msg.sender}</div>` : ''}
+                                    <div class="message-bubble">${msg.text}</div>
+                                    <div class="message-meta">${formatTime(msg.timestamp)}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                chatMessages.innerHTML = '<div class="no-results">Error loading messages</div>';
+            }
+        }
+
+        /**
+         * Send a chat message
+         */
+        async function sendMessage() {
+            if (!appState.currentChatUser) return;
+
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+
+            if (!message) return;
+
+            // Clear input
+            chatInput.value = '';
+
+            try {
+                // Save message
+                const newMessage = await sendChatMessage(appState.currentChatUser, message);
+
+                // Add message to UI immediately (optimistic update)
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages.querySelector('.loading')) {
+                    chatMessages.innerHTML = '';
+                }
+
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message own';
+                messageElement.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-bubble">${message}</div>
+                        <div class="message-meta">${formatTime(new Date())}</div>
+                    </div>
+                `;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showNotification('Error sending message', 'error');
+            }
+        }
+
+        /**
+         * Load settings
+         */
+        function loadSettings() {
+            document.getElementById('settingsName').value = appState.currentUser.name;
+            document.getElementById('settingsEmail').value = appState.currentUser.email;
+            document.getElementById('settingsDepartment').value = appState.currentUser.department;
+        }
+
+        /**
+         * Save settings
+         */
+        function saveSettings() {
+            // TODO: Replace with actual Flask API call: POST /api/settings/save
+            appState.currentUser.name = document.getElementById('settingsName').value;
+            appState.currentUser.email = document.getElementById('settingsEmail').value;
+            appState.currentUser.department = document.getElementById('settingsDepartment').value;
+
+            updateUserDisplay();
+            showNotification('Settings saved successfully!');
+        }
+
+        /**
+         * Update user display information
+         */
+        function updateUserDisplay() {
+            document.getElementById('userName').textContent = appState.currentUser.name;
+            document.getElementById('userAvatar').textContent = appState.currentUser.avatar;
+        }
+
+        /**
+         * Show notification
+         * @param {string} message - The notification message
+         * @param {string} type - The notification type (success, error, info)
+         */
+        function showNotification(message, type = 'success') {
+            console.log(`Notification [${type}]: ${message}`);
+            // TODO: Implement a toast notification system
+        }
+
+        /**
+         * Format time to readable format
+         * @param {Date} date - The date to format
+         */
+        function formatTime(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+
+            return date.toLocaleDateString();
+        }
+
+        /**
+         * Logout user
+         */
+        function logout() {
+            // TODO: Replace with actual Flask API call: POST /api/auth/logout
+            console.log('User logged out');
+            alert('You have been logged out. Redirecting to login page...');
+            // window.location.href = '/login';
+        }
+
+        // ==================== INITIALIZE APPLICATION ====================
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
