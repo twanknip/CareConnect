@@ -508,6 +508,24 @@
     }
     .security-badge svg { color: var(--teal); }
 
+    /* Error message */
+    .error-message {
+      display: none;
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: var(--radius-input);
+      padding: 12px 14px;
+      color: #c33;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .error-message.show { display: block; }
+
     /* ── Responsive ───────────────────────────────────────────── */
     @media (max-width: 768px) {
       .panel-left  { display: none; }
@@ -536,7 +554,7 @@
       <span class="plus">+</span>
     </div>
     <div class="heartbeat-wrap">
-      <svg viewBox="0 0 520 60" xmlns="[w3.org](http://www.w3.org/2000/svg)">
+      <svg viewBox="0 0 520 60" xmlns="http://www.w3.org/2000/svg">
         <polyline class="hb-path"
           points="0,30 60,30 80,30 95,8 110,52 125,8 140,30 160,30
                   180,30 200,30 215,12 228,48 241,12 254,30 274,30
@@ -560,7 +578,7 @@
         </div>
 
         <!-- Medical cross SVG -->
-        <svg class="cross-icon" viewBox="0 0 80 80" fill="none" xmlns="[w3.org](http://www.w3.org/2000/svg)">
+        <svg class="cross-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="30" y="8"  width="20" height="64" rx="6" fill="url(#crossGrad)" opacity="0.9"/>
           <rect x="8"  y="30" width="64" height="20" rx="6" fill="url(#crossGrad)" opacity="0.9"/>
           <defs>
@@ -605,7 +623,7 @@
 
         <div class="brand">
           <div class="brand-icon">
-            <svg width="20" height="20" viewBox="0 0 80 80" fill="none" xmlns="[w3.org](http://www.w3.org/2000/svg)">
+            <svg width="20" height="20" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="30" y="8"  width="20" height="64" rx="4" fill="white" opacity="0.9"/>
               <rect x="8"  y="30" width="64" height="20" rx="4" fill="white" opacity="0.9"/>
             </svg>
@@ -618,7 +636,9 @@
         </div>
         <p class="form-sub">Sign in to your staff account to continue</p>
 
-        <form class="login-form" action="/login" method="POST" id="loginForm">
+        <div class="error-message" id="errorMessage"></div>
+
+        <form class="login-form" id="loginForm">
 
           <!-- Username -->
           <div class="field-group">
@@ -629,7 +649,7 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              <input type="text" id="username" name="username" placeholder="staff@hospital.org" required>
+              <input type="text" id="username" name="username" placeholder="admin" required>
             </div>
           </div>
 
@@ -659,7 +679,7 @@
               <input type="checkbox" id="rememberMe" name="remember">
               <span class="remember-text">Remember me</span>
             </label>
-            <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+            <a href="#" class="forgot-link">Forgot password?</a>
           </div>
 
           <!-- Submit -->
@@ -719,13 +739,48 @@
       ripple.addEventListener('animationend', () => ripple.remove());
     });
 
-    /* ── Loading spinner on form submit ─────────────────────── */
-    document.getElementById('loginForm').addEventListener('submit', function () {
-      const label   = loginBtn.querySelector('.btn-label');
-      const spinner = document.getElementById('spinner');
-      label.textContent      = 'Signing in…';
-      spinner.style.display  = 'block';
-      loginBtn.disabled      = true;
+    /* ── Form submit handler ──────────────────────────────────── */
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMessage');
+      const label    = loginBtn.querySelector('.btn-label');
+      const spinner  = document.getElementById('spinner');
+
+      errorMsg.classList.remove('show');
+      label.textContent = 'Signing in…';
+      spinner.style.display = 'block';
+      loginBtn.disabled = true;
+
+      try {
+        const response = await fetch('backend_db.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        });
+
+        const result = await response.text();
+
+        if (result.includes('SUCCESS')) {
+          // Store username and redirect to portal
+          sessionStorage.setItem('username', username);
+          window.location.href = 'portal.html';
+        } else {
+          errorMsg.textContent = 'Invalid username or password. Try admin / password';
+          errorMsg.classList.add('show');
+          label.textContent = 'Sign In';
+          spinner.style.display = 'none';
+          loginBtn.disabled = false;
+        }
+      } catch (error) {
+        errorMsg.textContent = 'Connection error. Please try again.';
+        errorMsg.classList.add('show');
+        label.textContent = 'Sign In';
+        spinner.style.display = 'none';
+        loginBtn.disabled = false;
+      }
     });
   </script>
 </body>
