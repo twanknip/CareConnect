@@ -194,17 +194,16 @@ function handleSearch($conn) {
             return;
         }
         
-        // Search patients assigned to this doctor
-        // Using LIKE for search (proper parameterized query)
+        // Search ALL patients (not just assigned to this doctor)
+        // This allows any doctor to search and view any patient
         $searchQuery = "SELECT id, patient_id, first_name, last_name, age, email, medical_history 
                        FROM patients 
-                       WHERE assigned_doctor_id = ? 
-                       AND (first_name LIKE ? OR last_name LIKE ? OR patient_id LIKE ? OR email LIKE ?)
+                       WHERE (first_name LIKE ? OR last_name LIKE ? OR patient_id LIKE ? OR email LIKE ?)
                        LIMIT 20";
         
         $stmt = $conn->prepare($searchQuery);
         $searchParam = "%$query%";
-        $stmt->bind_param('issss', $userId, $searchParam, $searchParam, $searchParam, $searchParam);
+        $stmt->bind_param('ssss', $searchParam, $searchParam, $searchParam, $searchParam);
         $stmt->execute();
         $result = $stmt->get_result();
         
@@ -218,6 +217,7 @@ function handleSearch($conn) {
         
         echo '<ul class="patient-list">';
         while ($patient = $result->fetch_assoc()) {
+            $initials = htmlspecialchars($patient['first_name'][0] . $patient['last_name'][0]);
             echo '<li class="patient-item">';
             echo '<div class="patient-info">';
             echo '<div class="patient-name">' . htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) . '</div>';
@@ -225,7 +225,18 @@ function handleSearch($conn) {
                  ' | Age: ' . $patient['age'] . 
                  ' | ' . htmlspecialchars($patient['email']) . '</div>';
             echo '</div>';
-            echo '<button class="btn-view" onclick="alert(\'Details for ' . addslashes($patient['first_name'] . ' ' . $patient['last_name']) . '\')">View</button>';
+            
+            // Create modal button with patient data
+            $patientId = htmlspecialchars($patient['patient_id']);
+            $firstName = htmlspecialchars($patient['first_name']);
+            $lastName = htmlspecialchars($patient['last_name']);
+            $age = intval($patient['age']);
+            $medicalHistory = htmlspecialchars($patient['medical_history'] ?? '');
+            
+            $modalButton = "openPatientModal('$patientId', '$firstName', '$lastName', $age, 'Not specified', '" . 
+                          htmlspecialchars($patient['email']) . "', 'N/A', 'N/A', 'None', '$medicalHistory', 'None')";
+            
+            echo '<button class="btn-view-modal" onclick="' . $modalButton . '">View</button>';
             echo '</li>';
         }
         echo '</ul>';

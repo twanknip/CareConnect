@@ -5,6 +5,167 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MediPortal — Staff Dashboard</title>
   <link rel="stylesheet" href="portal.css">
+  <style>
+    /* ── Modal Popup ──────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--gray-400);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.25s;
+    }
+
+    .modal-close:hover {
+      background: var(--gray-100);
+      color: var(--text-dark);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .patient-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .patient-detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: var(--text-mid);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
+    .patient-avatar-modal {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a5276, #17a589);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .btn-close-modal {
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--blue-soft);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.25s;
+    }
+
+    .btn-close-modal:hover {
+      background: var(--blue-mid);
+      transform: translateY(-2px);
+    }
+
+    /* Update View button to use onclick for modal */
+    .btn-view-modal {
+      padding: 8px 16px;
+      background: var(--blue-soft);
+      color: white;
+      border: none;
+      border-radius: var(--radius-input);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all var(--transition);
+    }
+
+    .btn-view-modal:hover {
+      background: var(--blue-mid);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+  </style>
 </head>
 <body>
 
@@ -219,7 +380,27 @@
     </div>
   </div>
 
+  <!-- Patient Details Modal -->
+  <div class="modal-overlay" id="patientModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Patient Details</h2>
+        <button class="modal-close" onclick="closePatientModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="patient-avatar-modal" id="modalAvatar">JD</div>
+        <div id="modalContent">Loading...</div>
+        <div class="modal-actions">
+          <button class="btn-close-modal" onclick="closePatientModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // Global variable to store selected patient
+    let selectedPatient = null;
+
     // ============ THEME TOGGLE ============
     const themeToggle = document.getElementById('themeToggle');
     const htmlElement = document.documentElement;
@@ -288,20 +469,95 @@
       try {
         const response = await fetch(`backend_db.php?action=search&q=${encodeURIComponent(query)}`);
         const data = await response.text();
-        // VULNERABILITY: XSS - Direct innerHTML with unsanitized user input
         document.getElementById('patientResults').innerHTML = data;
       } catch (error) {
         console.error('Error searching patients', error);
       }
     }
 
+    // ============ PATIENT MODAL ============
+    /**
+     * Open patient details modal
+     */
+    function openPatientModal(patientId, firstName, lastName, age, gender, email, phone, bloodType, allergies, medicalHistory, medications) {
+      selectedPatient = {
+        id: patientId,
+        firstName: firstName,
+        lastName: lastName
+      };
+
+      const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+      document.getElementById('modalAvatar').textContent = initials;
+
+      const modalContent = `
+        <div class="patient-detail-row">
+          <span class="detail-label">Patient ID</span>
+          <span class="detail-value">${patientId}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Full Name</span>
+          <span class="detail-value">${firstName} ${lastName}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Age</span>
+          <span class="detail-value">${age} years old</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Gender</span>
+          <span class="detail-value">${gender}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Email</span>
+          <span class="detail-value">${email}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Phone</span>
+          <span class="detail-value">${phone}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Blood Type</span>
+          <span class="detail-value">${bloodType}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Allergies</span>
+          <span class="detail-value">${allergies || 'None'}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Medical History</span>
+          <span class="detail-value">${medicalHistory || 'No history'}</span>
+        </div>
+        <div class="patient-detail-row">
+          <span class="detail-label">Current Medications</span>
+          <span class="detail-value">${medications || 'None'}</span>
+        </div>
+      `;
+
+      document.getElementById('modalContent').innerHTML = modalContent;
+      document.getElementById('patientModal').classList.add('active');
+    }
+
+    /**
+     * Close patient modal
+     */
+    function closePatientModal() {
+      document.getElementById('patientModal').classList.remove('active');
+      selectedPatient = null;
+    }
+
+    /**
+     * Close modal when clicking outside
+     */
+    document.getElementById('patientModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('patientModal')) {
+        closePatientModal();
+      }
+    });
+
     // ============ SETTINGS ============
     function loadSettings() {
-      // Load saved bio and display it (XSS vulnerable)
       const savedBio = localStorage.getItem('userBio') || '';
       if (savedBio) {
         document.getElementById('settingBio').value = savedBio;
-        // VULNERABILITY: XSS - Direct innerHTML with unsanitized data
         document.getElementById('bioDisplay').innerHTML = savedBio;
       }
     }
@@ -312,19 +568,15 @@
       const dept = document.getElementById('settingDept').value;
       const bio = document.getElementById('settingBio').value;
 
-      // Save bio to localStorage (can contain XSS)
       localStorage.setItem('userBio', bio);
-
-      // Display the bio (VULNERABLE TO XSS)
       document.getElementById('bioDisplay').innerHTML = bio;
 
-      // Also send to backend (optional)
       fetch('backend_db.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `action=save_settings&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&dept=${encodeURIComponent(dept)}`
       }).then(() => {
-        alert('Settings saved! Bio displayed below.');
+        alert('Settings saved! (Bio displayed below)');
       });
     }
 
