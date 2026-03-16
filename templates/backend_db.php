@@ -194,18 +194,52 @@ function handleSearch($conn) {
             return;
         }
         
-        // Search ALL patients (not just assigned to this doctor)
-        // This allows any doctor to search and view any patient
-        $searchQuery = "SELECT id, patient_id, first_name, last_name, age, email, medical_history 
-                       FROM patients 
-                       WHERE (first_name LIKE ? OR last_name LIKE ? OR patient_id LIKE ? OR email LIKE ?)
-                       LIMIT 20";
+        /* ════════════════════════════════════════════════════════════════════
+           SQL INJECTION VULNERABILITY DEMONSTRATION
+           
+           This is an INTENTIONAL vulnerability for educational purposes ONLY.
+           Toggle between VULNERABLE and SAFE modes below.
+           
+           ⚠️  VULNERABLE MODE:
+           Try this in search: ' OR '1'='1' -- 
+           Result: Returns ALL patients (bypasses search filter)
+        ════════════════════════════════════════════════════════════════════ */
         
-        $stmt = $conn->prepare($searchQuery);
-        $searchParam = "%$query%";
-        $stmt->bind_param('ssss', $searchParam, $searchParam, $searchParam, $searchParam);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $USE_VULNERABLE_QUERY = false;  // ← CHANGE THIS TO TOGGLE
+                                        // false = SAFE (prepared statements)
+                                        // true  = VULNERABLE (SQL injection possible)
+        
+        if ($USE_VULNERABLE_QUERY) {
+            // ⚠️  VULNERABLE: Direct string concatenation - SQL INJECTION POSSIBLE!
+            $searchQuery = "SELECT id, patient_id, first_name, last_name, age, email, medical_history 
+                           FROM patients 
+                           WHERE (first_name LIKE '%" . $query . "%' 
+                           OR last_name LIKE '%" . $query . "%' 
+                           OR patient_id LIKE '%" . $query . "%' 
+                           OR email LIKE '%" . $query . "%')
+                           LIMIT 20";
+            
+            // Direct query execution - vulnerable!
+            $result = $conn->query($searchQuery);
+            
+            if (!$result) {
+                echo '<p style="color: #c33; padding: 12px; background: #fee; border-radius: 8px;">Query error: ' . htmlspecialchars($conn->error) . '</p>';
+                return;
+            }
+        } else {
+            // ✅ SAFE: Using prepared statements with parameterized queries
+            // SQL injection is impossible with this approach
+            $searchQuery = "SELECT id, patient_id, first_name, last_name, age, email, medical_history 
+                           FROM patients 
+                           WHERE (first_name LIKE ? OR last_name LIKE ? OR patient_id LIKE ? OR email LIKE ?)
+                           LIMIT 20";
+            
+            $stmt = $conn->prepare($searchQuery);
+            $searchParam = "%$query%";
+            $stmt->bind_param('ssss', $searchParam, $searchParam, $searchParam, $searchParam);
+            $stmt->execute();
+            $result = $stmt->get_result();
+        }
         
         if ($result->num_rows === 0) {
             // VULNERABILITY: XSS - Query parameter displayed without escaping
