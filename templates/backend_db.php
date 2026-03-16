@@ -356,7 +356,7 @@ function handleSendMessage($conn) {
         }
         
         $senderId = $_SESSION['user_id'];
-        $recipientId = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $recipientId = isset($_POST['recipient_id']) ? intval($_POST['recipient_id']) : 0;
         $message = isset($_POST['message']) ? $_POST['message'] : '';
         
         if (empty($message) || $recipientId === 0) {
