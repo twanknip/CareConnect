@@ -1,0 +1,309 @@
+╔══════════════════════════════════════════════════════════════════╗
+║         Security Settings - Quick Modification Guide            ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+WHERE TO FIND THE SETTINGS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: login.html
+Location: Around line 200
+Search for: "SECURITY_CONFIG"
+
+
+THE CODE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    const SECURITY_CONFIG = {
+      // Maximum failed login attempts before lockout
+      MAX_ATTEMPTS: 5,
+      
+      // Lockout duration in seconds (300 = 5 minutes)
+      LOCKOUT_DURATION: 300,
+      
+      // Attempt tracking key in localStorage
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      
+      // Enable/disable brute force protection
+      ENABLED: true
+    };
+
+
+═══════════════════════════════════════════════════════════════════
+CONFIGURATION PRESETS
+═══════════════════════════════════════════════════════════════════
+
+🔓 COMPLETELY VULNERABLE (Disable Protection):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 1000,
+      LOCKOUT_DURATION: 10,
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: false              // ← DISABLED
+    };
+
+Effect: No protection at all, attacker can try unlimited times
+Use for: Demonstrating what happens WITHOUT defenses
+Risk: Very high vulnerability
+
+
+🛡️  DEFAULT PROTECTION (Recommended for Demo):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 5,            // Lock after 5 failed tries
+      LOCKOUT_DURATION: 300,      // 5 minute lockout
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: true               // ← ENABLED
+    };
+
+Effect: Account locks after 5 failed attempts for 5 minutes
+Use for: Balanced demo showing both attack and defense
+Risk: Low (good protection)
+
+
+🔒 STRICT PROTECTION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 3,            // Lock after 3 failed tries
+      LOCKOUT_DURATION: 900,      // 15 minute lockout
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: true               // ← ENABLED
+    };
+
+Effect: Very strict, locks account quickly for long time
+Use for: Showing maximum security (inconvenient for users)
+Risk: Very low (but impacts user experience)
+
+
+🚀 LENIENT PROTECTION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 10,           // Lock after 10 failed tries
+      LOCKOUT_DURATION: 60,       // Only 1 minute lockout
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: true               // ← ENABLED
+    };
+
+Effect: More attempts allowed, shorter lockout
+Use for: Easier brute force demo with longer attack window
+Risk: Medium (easier to attack but still protected)
+
+
+═══════════════════════════════════════════════════════════════════
+COMMON ATTACKS & DEFENSES
+═══════════════════════════════════════════════════════════════════
+
+SCENARIO 1: DEMONSTRATE VULNERABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Goal: Show how easy it is to brute force without protection
+
+Configuration:
+  ENABLED: false                 (no protection)
+
+Attack in Burp:
+  - Run intruder with 50+ password combinations
+  - Eventually finds correct password
+  - "admin / password" succeeds
+  - Shows vulnerability clearly
+
+Time to success: Typically 1-2 minutes
+
+
+SCENARIO 2: DEMONSTRATE DEFENSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Goal: Show how protection stops brute force
+
+Configuration:
+  MAX_ATTEMPTS: 5
+  LOCKOUT_DURATION: 300
+  ENABLED: true                  (protection active)
+
+Attack in Burp:
+  - Run intruder with same 50+ combinations
+  - After 5 attempts, account locks
+  - Remaining 45 attempts fail instantly
+  - Shows "Account locked" message
+  - Attack defeated!
+
+Time to lockout: ~30 seconds
+
+
+SCENARIO 3: COMPARE PROTECTION LEVELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Goal: Show different protection effectiveness
+
+Test 1 - Lenient (10 attempts, 1 minute):
+  Attacker gets 10 tries before lockout
+  More chance to find password
+
+Test 2 - Balanced (5 attempts, 5 minutes):
+  Attacker gets 5 tries before lockout
+  Medium protection
+
+Test 3 - Strict (3 attempts, 15 minutes):
+  Attacker gets 3 tries before lockout
+  Maximum protection
+
+
+═══════════════════════════════════════════════════════════════════
+HOW TO QUICKLY SWITCH CONFIGURATIONS
+═══════════════════════════════════════════════════════════════════
+
+METHOD 1: EDIT & SAVE (Requires page refresh)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Open login.html in text editor
+2. Find SECURITY_CONFIG
+3. Change the values
+4. Save file (Ctrl+S)
+5. Refresh browser (F5)
+6. Changes take effect immediately!
+
+
+METHOD 2: BROWSER CONSOLE (No refresh needed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Open login.html
+2. Press F12 (Developer Tools)
+3. Go to Console tab
+4. Paste: localStorage.clear()
+5. Press Enter
+6. This clears all lockouts
+
+
+═══════════════════════════════════════════════════════════════════
+UNDERSTANDING THE SETTINGS
+═══════════════════════════════════════════════════════════════════
+
+MAX_ATTEMPTS: 5
+  │
+  ├─ This is the number of failed login attempts allowed
+  │  before the account gets locked
+  │
+  ├─ Value of 5 means: 
+  │  - Attempts 1-5: Normal error message shown
+  │  - Attempt 6: Account locked immediately
+  │
+  └─ Increase = Easier to brute force
+     Decrease = Harder to brute force
+
+
+LOCKOUT_DURATION: 300
+  │
+  ├─ How long the account stays locked (in seconds)
+  ├─ 300 seconds = 5 minutes
+  │
+  ├─ Examples:
+  │  - 60 = 1 minute (short, attacker can retry soon)
+  │  - 300 = 5 minutes (medium)
+  │  - 900 = 15 minutes (long, prevents rapid retry)
+  │  - 3600 = 1 hour (very long)
+  │
+  └─ After this time, account automatically unlocks
+
+
+ENABLED: true/false
+  │
+  ├─ Turns protection on/off
+  │
+  ├─ true = Protection active
+  │   - Attempts tracked
+  │   - Account locks on MAX_ATTEMPTS
+  │   - Perfect for secure demo
+  │
+  └─ false = No protection
+      - Attempts not tracked
+      - Account never locks
+      - Vulnerable to brute force
+
+
+═══════════════════════════════════════════════════════════════════
+TESTING CHECKLIST
+═══════════════════════════════════════════════════════════════════
+
+Before Burp Attack:
+  ☐ Server running (php -S localhost:8000)
+  ☐ login.html accessible
+  ☐ Can manually login with admin/password
+  ☐ Configuration set to your desired level
+  ☐ Browser cache cleared
+  ☐ localStorage cleared (F12 → Application)
+
+During Attack:
+  ☐ Burp Intruder configured
+  ☐ Payloads set up
+  ☐ Attack running
+  ☐ Monitoring response sizes
+  ☐ Watching for lockout message
+
+After Attack:
+  ☐ Verify account locked (if protection enabled)
+  ☐ Wait for timeout to expire (or clear localStorage)
+  ☐ Try to login again
+  ☐ Verify account unlocks after timeout
+
+
+═══════════════════════════════════════════════════════════════════
+QUICK PRESET COPY/PASTE
+═══════════════════════════════════════════════════════════════════
+
+Copy one of these and replace SECURITY_CONFIG in login.html:
+
+
+NO PROTECTION:
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 1000,
+      LOCKOUT_DURATION: 10,
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: false
+    };
+
+
+BASIC (5 attempts, 5 min):
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 5,
+      LOCKOUT_DURATION: 300,
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: true
+    };
+
+
+STRICT (3 attempts, 15 min):
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 3,
+      LOCKOUT_DURATION: 900,
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: true
+    };
+
+
+LENIENT (10 attempts, 1 min):
+    const SECURITY_CONFIG = {
+      MAX_ATTEMPTS: 10,
+      LOCKOUT_DURATION: 60,
+      ATTEMPTS_KEY: 'login_attempts',
+      LOCKOUT_KEY: 'account_locked_until',
+      ENABLED: true
+    };
+
+
+═══════════════════════════════════════════════════════════════════
+THAT'S IT!
+═══════════════════════════════════════════════════════════════════
+
+Easy to modify = Easy to demonstrate both vulnerability AND defense!

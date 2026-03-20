@@ -6,7 +6,7 @@
  */
 
 session_start();
-header('Content-Type: text/plain; charset=utf-8');
+// Don't set default content-type here - let endpoints set their own
 
 // Include configuration
 require_once __DIR__ . '/config.php';
@@ -31,6 +31,9 @@ switch($action) {
     case 'users':
         handleUsers($conn);
         break;
+    case 'get_contacts':
+        handleGetContacts($conn);
+        break;
     case 'messages':
         handleMessages($conn);
         break;
@@ -48,6 +51,9 @@ switch($action) {
         break;
     case 'get_messages':
         handleGetMessages($conn);
+        break;
+    case 'get_messages_json':
+        handleGetMessagesJson($conn);
         break;
     default:
         echo 'Invalid action';
@@ -205,18 +211,19 @@ function handleSearch($conn) {
            Result: Returns ALL patients (bypasses search filter)
         ════════════════════════════════════════════════════════════════════ */
         
-        $USE_VULNERABLE_QUERY = false;  // ← CHANGE THIS TO TOGGLE
+        $USE_VULNERABLE_QUERY = true;  // ← CHANGE THIS TO TOGGLE
                                         // false = SAFE (prepared statements)
                                         // true  = VULNERABLE (SQL injection possible)
         
         if ($USE_VULNERABLE_QUERY) {
             // ⚠️  VULNERABLE: Direct string concatenation - SQL INJECTION POSSIBLE!
+            // The key is that user input is inserted directly without escaping
             $searchQuery = "SELECT id, patient_id, first_name, last_name, age, email, medical_history 
                            FROM patients 
-                           WHERE (first_name LIKE '%" . $query . "%' 
+                           WHERE first_name LIKE '%" . $query . "%' 
                            OR last_name LIKE '%" . $query . "%' 
                            OR patient_id LIKE '%" . $query . "%' 
-                           OR email LIKE '%" . $query . "%')
+                           OR email LIKE '%" . $query . "%'
                            LIMIT 20";
             
             // Direct query execution - vulnerable!
@@ -730,4 +737,114 @@ function getUnreadCount($conn, $userId, $senderId) {
     }
 }
 
+/**
+ * Get all contacts for chat system (JSON format)
+ */
+function handleGetContacts($conn) {
+    try {
+        if (!isset($_SESSION['user_id'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            return;
+        }
+        
+        $userId = $_SESSION['user_id'];
+        
+        // Get all users except current user
+        $query = "SELECT id, username FROM users 
+                  WHERE id != ? AND is_active = TRUE 
+                  ORDER BY username";
+        
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $contacts = [];
+        while ($user = $result->fetch_assoc()) {
+            $contacts[] = [
+                'id' => $user['id'],
+                'username' => $user['username']
+            ];
+        }
+        $stmt->close();
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'contacts' => $contacts
+        ]);
+        
+    } catch (Exception $e) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+}
+
+/**
+ * Get messages for chat system (JSON format - NEW)
+ */
+function handleGetMessagesJson($conn) {
+    try {
+        if (!isset($_SESSION['user_id'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'messages' => [], 'error' => 'Not logged in']);
+            return;
+        }
+        
+        $userId = $_SESSION['user_id'];
+        $recipientId = isset($_GET['recipient_id']) ? intval($_GET['recipient_id']) : 0;
+        
+        if ($recipientId === 0) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'messages' => [], 'error' => 'No recipient']);
+            return;
+        }
+        
+        $query = "SELECT 
+                    sender_id,
+                    recipient_id,
+                    (SELECT username FROM users WHERE id = messages.sender_id) as sender_username,
+                    (SELECT username FROM users WHERE id = messages.recipient_id) as recipient_username,
+                    message,
+                    created_at
+                  FROM messages
+                  WHERE (sender_id = ? AND recipient_id = ?) 
+                     OR (sender_id = ? AND recipient_id = ?)
+                  ORDER BY created_at ASC";
+        
+        $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'messages' => [], 'error' => 'Prepare failed: ' . $conn->error]);
+            return;
+        }
+        
+        $stmt->bind_param('iiii', $userId, $recipientId, $recipientId, $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $messages = [];
+        while ($msg = $result->fetch_assoc()) {
+            $messages[] = [
+                'sender_id' => $msg['sender_id'],
+                'sender_username' => $msg['sender_username'],
+                'recipient_id' => $msg['recipient_id'],
+                'message' => $msg['message'],
+                'created_at' => $msg['created_at']
+            ];
+        }
+        $stmt->close();
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'messages' => $messages
+        ]);
+        
+    } catch (Exception $e) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'messages' => [], 'error' => $e->getMessage()]);
+    }
+}
 ?>
