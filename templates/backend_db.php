@@ -252,7 +252,11 @@ function handleSearch($conn) {
             // VULNERABILITY: XSS - Query parameter displayed without escaping
             // Attacker can inject: "><script>alert('XSS')</script>
             echo '<p style="color: var(--gray-400); text-align: center;">No patients found matching: ' . $query . '</p>';
-            $stmt->close();
+            
+            // Only close stmt if it was created (safe mode)
+            if (!$USE_VULNERABLE_QUERY && isset($stmt)) {
+                $stmt->close();
+            }
             return;
         }
         
@@ -282,7 +286,10 @@ function handleSearch($conn) {
         }
         echo '</ul>';
         
-        $stmt->close();
+        // Only close stmt if it was created (safe mode)
+        if (!$USE_VULNERABLE_QUERY && isset($stmt)) {
+            $stmt->close();
+        }
         
     } catch (Exception $e) {
         logError($e->getMessage());
